@@ -26,7 +26,7 @@ function GuessForm(): JSX.Element {
     if (guess < lowest) alert(`GUESS NUMBER CANNOT BE LESS THAN ${lowest}`);
     setIsLoading(true);
     submitGuess({ guess, gameId })
-      .then(({ data: { result, instructions } }) => {
+      .then(({ data: { result } }) => {
         if (result === "lower") {
           setHighest(guess);
           viewMessage(`GO LOWER THAN ${guess.toLocaleString()}`);
@@ -39,8 +39,6 @@ function GuessForm(): JSX.Element {
           storeStorage("lowest", guess?.toString());
           return;
         }
-        console.log(instructions);
-        console.log(gameId, "game id");
         viewMessage(`CONGRATULATIONS! THE ANSWER IS ${guess.toLocaleString()}`);
         resetGame();
       })
@@ -60,6 +58,7 @@ function GuessForm(): JSX.Element {
         }
         max={highest}
         autoFocus
+        required
       />
       <button
         type="submit"

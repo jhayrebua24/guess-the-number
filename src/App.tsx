@@ -2,9 +2,11 @@ import * as React from "react";
 import { NumberContext } from "components/context";
 import { fetchNewGameId } from "config";
 import GuessForm from "components/GuessForm";
+import SuccessForm from "components/SucessForm";
 import { getNumberStorage, getStoredGameId, storeStorage } from "helpers";
 
 function App(): JSX.Element {
+  const [isFinished, setIsFinished] = React.useState(false);
   const [startGameLoading, setStartGameLoading] = React.useState(false);
   const [message, setMessage] = React.useState("START GUESSING");
   const [gameId, setGameId] = React.useState(getStoredGameId());
@@ -28,6 +30,7 @@ function App(): JSX.Element {
         storeStorage("gameId", data?.gameId);
         setHighest(1000000);
         setLowest(0);
+        setMessage("");
       })
       .catch((e) => console.log(e))
       .finally(() => setStartGameLoading(false));
@@ -47,9 +50,10 @@ function App(): JSX.Element {
   const resetGame = (): void => {
     setLowest(0);
     setHighest(1000000);
+    setMessage("");
+    setIsFinished(true);
     storeStorage("highest", "1000000");
     storeStorage("lowest", "0");
-    storeStorage("gameId", "");
   };
 
   // render text for button
@@ -66,7 +70,9 @@ function App(): JSX.Element {
   return (
     <NumberContext.Provider
       value={{
+        setIsFinished,
         gameId,
+        setGameId,
         setHighest,
         setLowest,
         viewMessage,
@@ -78,37 +84,46 @@ function App(): JSX.Element {
       <div className="h-screen w-screen flex flex-col justify-center items-center">
         <div className="flex-grow h-full w-full flex flex-col items-center py-12 space-y-8">
           <h1 className="font-thin text-6xl text-center">GUESS THE NUMBER!!</h1>
-          {!gameId && (
-            <h2 className="text-red-400 font-semibold text-3xl">
-              START A NEW GAME TO PLAY
-            </h2>
-          )}
-          {gameId && (
-            <div className="text-left">
-              <h2 className="font-semibold text-gray-600 text-2xl">
-                RANGE: {lowest.toLocaleString()} - {highest.toLocaleString()}
-              </h2>
-              <h2 className="font-semibold text-red-400 text-2xl">
-                ODDS: 1 of {(highest - lowest).toLocaleString()}
-              </h2>
-            </div>
-          )}
-
-          {gameId && (
+          {isFinished ? (
+            <SuccessForm />
+          ) : (
             <>
-              <h1 className="text-green-500 text-3xl text-center">{message}</h1>
-              <GuessForm />
-              <span className="text-center">or</span>
+              {!gameId && (
+                <h2 className="text-red-400 font-semibold text-3xl">
+                  START A NEW GAME TO PLAY
+                </h2>
+              )}
+              {gameId && (
+                <div className="text-left">
+                  <h2 className="font-semibold text-gray-600 text-2xl">
+                    RANGE: {lowest.toLocaleString()} -{" "}
+                    {highest.toLocaleString()}
+                  </h2>
+                  <h2 className="font-semibold text-red-400 text-2xl">
+                    ODDS: 1 of {(highest - lowest).toLocaleString()}
+                  </h2>
+                </div>
+              )}
+
+              {gameId && (
+                <>
+                  <h1 className="text-green-500 text-3xl text-center">
+                    {message}
+                  </h1>
+                  <GuessForm />
+                  <span className="text-center">or</span>
+                </>
+              )}
+              <button
+                type="button"
+                className="p-4 bg-green-400 text-white rounded w-56 hover:bg-green-500"
+                onClick={handleStartNewGame}
+                disabled={startGameLoading}
+              >
+                {newGameButtonText}
+              </button>
             </>
           )}
-          <button
-            type="button"
-            className="p-4 bg-green-400 text-white rounded w-56 hover:bg-green-500"
-            onClick={handleStartNewGame}
-            disabled={startGameLoading}
-          >
-            {newGameButtonText}
-          </button>
         </div>
       </div>
     </NumberContext.Provider>
